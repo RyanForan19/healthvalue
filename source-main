@@ -1,0 +1,99 @@
+package me.RyanForan.main;
+
+import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
+import org.bukkit.plugin.java.JavaPlugin;
+
+public class MainPlugin extends JavaPlugin implements Listener {
+	
+	@Override
+	public void onEnable() {
+		Bukkit.getServer().getPluginManager().registerEvents(this, this);
+		
+		getConfig().options().copyDefaults(true);
+		saveConfig();
+		reloadConfig();
+	}
+	
+	@Override
+	public void onDisable() {
+		
+	}
+	
+	@SuppressWarnings("deprecation")
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		
+		/*
+		 /health: Return usage of command
+		 /health set <health> <player>: Sets the health of a player
+		 /health reload: Reloads config
+		 */
+		
+		if(cmd.getName().equalsIgnoreCase("health")) {
+		if (sender.hasPermission("healthvalue.perm")) {
+			if (args.length == 0) {
+				sender.sendMessage("" + getConfig().getString("commandusage").replaceAll("&", "§"));
+				return true;
+			}
+			
+			if (args[0].equalsIgnoreCase("set")) {
+				if (args.length == 1) {
+					sender.sendMessage("" + getConfig().getString("enterargs").replaceAll("&", "§"));
+					return true;
+				}
+				if (args.length == 2) {
+					sender.sendMessage("" + getConfig().getString("enterargs").replaceAll("&", "§"));
+					return true;
+				}
+				
+				int health = Integer.parseInt(args[1]);
+				
+				String playername = "";
+				playername += args[2] + "";
+				
+				if (playername.contains("*")) {
+					Bukkit.getOnlinePlayers().forEach(pl -> pl.setMaxHealth(health));
+					Bukkit.getOnlinePlayers().forEach(pl -> pl.sendMessage("" + getConfig().getString("senderrecieved").replaceAll("&", "§").replaceAll("%health%", args[1])));
+					sender.sendMessage("" + getConfig().getString("allhealth").replaceAll("&", "§").replaceAll("%health%", args[1]));
+					return true;
+				} else {
+			
+				Player target = Bukkit.getPlayerExact(playername);
+				if(target instanceof Player) {
+					target.setMaxHealth(health);
+					target.sendMessage("" + getConfig().getString("senderrecieved").replaceAll("&", "§").replaceAll("%health%", args[1]));
+					sender.sendMessage("" + getConfig().getString("playershealth").replaceAll("&", "§").replaceAll("%player%", playername).replaceAll("%health%", args[1]));
+					return true;
+				} else {
+					sender.sendMessage("" + getConfig().getString("playerdoesnotexist").replaceAll("&", "§"));
+					return true;
+				}
+				
+				}
+				
+				
+			}
+			
+			else if (args[0].equalsIgnoreCase("reload")) {
+				reloadConfig();
+				sender.sendMessage("" + getConfig().getString("reload").replaceAll("&", "§"));
+				return true;
+			}
+			
+			else {
+				sender.sendMessage("" + getConfig().getString("invalidoperation").replaceAll("&", "§"));
+				return true;
+			}
+			
+		} else {
+			sender.sendMessage("" + getConfig().getString("noperms").replaceAll("&", "§"));
+			return true;
+		}
+		
+		
+	} return false;
+	}
+}
